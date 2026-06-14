@@ -1,122 +1,76 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import { useTasks } from "./hooks/useTasks";
+import { CreateTaskForm } from "./components/CreateTaskForm";
+import { TaskList } from "./components/TaskList";
+import { AuditLogModal } from "./components/AuditLogModal";
+import { SimpleErrorBoundary } from "./components/SimpleErrorBoundary";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { data: tasks, isLoading, error } = useTasks();
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  // Find the selected task's title for modal context
+  const selectedTask = tasks?.find((t) => t.id === selectedTaskId);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <SimpleErrorBoundary>
+      <div className="app-container">
+        {/* Header */}
+        <header className="app-header">
+          <div className="header-logo">💼</div>
+          <div>
+            <h1 className="header-title">Agent Kerja</h1>
+            <p className="header-subtitle">
+              Task Management Board with Immutable Audit Logging
+            </p>
+          </div>
+        </header>
 
-      <div className="ticks"></div>
+        {/* Main Content */}
+        <main className="app-main">
+          {/* Create Task Form Column */}
+          <section className="column-form">
+            <CreateTaskForm />
+          </section>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          {/* Task List Column */}
+          <section className="column-list">
+            <h2 className="section-title">Active Task List</h2>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            {isLoading && (
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Loading active tasks...</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="error-state">
+                <h3>Failed to Sync Tasks</h3>
+                <p className="error-message">{error.error.message}</p>
+              </div>
+            )}
+
+            {!isLoading && !error && tasks && (
+              <TaskList
+                tasks={tasks}
+                onViewLogs={(id) => setSelectedTaskId(id)}
+              />
+            )}
+          </section>
+        </main>
+
+        {/* Audit Log Modal */}
+        {selectedTaskId && selectedTask && (
+          <AuditLogModal
+            taskId={selectedTaskId}
+            taskTitle={selectedTask.title}
+            onClose={() => setSelectedTaskId(null)}
+          />
+        )}
+      </div>
+    </SimpleErrorBoundary>
+  );
 }
 
-export default App
+export default App;
