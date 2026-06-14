@@ -2,6 +2,9 @@ export type TaskStatus = "to_do" | "pending" | "in_progress" | "done";
 
 export const STATUS_ORDER: TaskStatus[] = ["to_do", "pending", "in_progress", "done"];
 
+export const ACTORS = ["john.doe", "jane.doe", "admin"] as const;
+export type Actor = typeof ACTORS[number];
+
 export interface Task {
   id: string;            // UUID
   title: string;
