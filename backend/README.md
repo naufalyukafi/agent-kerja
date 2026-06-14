@@ -80,6 +80,52 @@ All endpoints use a consistent JSON response shape.
 
 ---
 
+## API Payload Specifications
+
+### 1. Create Task (`POST /tasks`)
+**Payload:**
+```json
+{
+  "title": "Build UI Component",
+  "description": "Optional detailed description text",
+  "actor": "john.doe"
+}
+```
+*Note: `actor` must be one of the predefined list: `john.doe`, `jane.doe`, `admin`.*
+
+### 2. Transition Status (`PUT /tasks/:id/status`)
+**Payload:**
+```json
+{
+  "status": "pending",
+  "actor": "jane.doe"
+}
+```
+
+---
+
+## Core Business Rules & Error Handling
+
+The application enforces specific business rules at the service layer and yields machine-readable error codes for consistent API error parsing:
+
+| Error Code | HTTP Status | Trigger Condition |
+| --- | --- | --- |
+| `VALIDATION_ERROR` | `400 Bad Request` | Missing required fields, empty title strings, or an actor not present in the predefined list (`john.doe`, `jane.doe`, `admin`). |
+| `INVALID_STATUS_TRANSITION` | `400 Bad Request` | Attempting to transition status out of sequence (e.g. `to_do` directly to `in_progress` skipping `pending`, or any backward transition). |
+| `TASK_NOT_FOUND` | `404 Not Found` | Requesting status transition or deletion of a task ID that does not exist in `tasks.json`. |
+
+### Validation Highlights
+
+1. **State Machine Constraint:** Task status transitions must strictly follow this sequential path:
+   $$\text{to\_do} \rightarrow \text{pending} \rightarrow \text{in\_progress} \rightarrow \text{done}$$
+   Any deviation is rejected with `INVALID_STATUS_TRANSITION`.
+   
+2. **Status Update Idempotency:** If a status transition is requested for a task that is *already* in that target status, the server returns HTTP 200 with `changed: false`. **No duplicate audit log is appended** to `audit-logs.json`.
+
+3. **Orphan Audit Log Retention:** When a task is permanently deleted using `DELETE /tasks/:id`, the task record is removed from `tasks.json`, but all its historical audit logs remain intact in `audit-logs.json`. The log entries store the denormalized `task_title` to ensure they remain human-readable.
+
+---
+
 ## Getting Started
 
 ### Prerequisites
