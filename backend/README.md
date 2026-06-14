@@ -117,8 +117,7 @@ The application enforces specific business rules at the service layer and yields
 ### Validation Highlights
 
 1. **State Machine Constraint:** Task status transitions must strictly follow this sequential path:
-   $$\text{to\_do} \rightarrow \text{pending} \rightarrow \text{in\_progress} \rightarrow \text{done}$$
-   Any deviation is rejected with `INVALID_STATUS_TRANSITION`.
+   `to_do` → `pending` → `in_progress` → `done`. Any deviation is rejected with `INVALID_STATUS_TRANSITION`.
    
 2. **Status Update Idempotency:** If a status transition is requested for a task that is *already* in that target status, the server returns HTTP 200 with `changed: false`. **No duplicate audit log is appended** to `audit-logs.json`.
 
