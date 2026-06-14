@@ -55,6 +55,10 @@ No delete or update endpoints are built for `/audit-logs`. Immutability is enfor
 ### ADR-005: Task Creation Logs
 Creating a task writes a corresponding audit log entry with `from_status: null` to track the creation event.
 
+### ADR-006: Consistent Naming Conventions
+- **API Payloads & Database Models (`snake_case`)**: Used for properties matching the database records (e.g., `created_at`, `updated_at`, `task_id`, `from_status`) to align directly with backend serialization standards.
+- **Application Logic & UI Props (`camelCase`)**: Used for local variables, component props, and functions (e.g., `selectedTaskId`, `createTask`, `updateStatus`, `getAuditLogs`) to adhere to idiomatic TypeScript/JavaScript standards.
+
 ---
 
 ## Getting Started
