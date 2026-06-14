@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "id": "d3b07384-d113-4c9e-a10c-512689ef239b",
+    "title": "Integrate GitLab API for commit tracking",
+    "description": "Implement authentication and fetch commit logs dynamically for individual developer feeds.",
+    "status": "done",
+    "created_at": "2026-06-14T01:00:00.000Z",
+    "updated_at": "2026-06-14T02:30:00.000Z"
+  },
+  {
+    "id": "a8c08271-e23a-4f4c-81b4-29de31985bd3",
+    "title": "Refactor DB transaction middleware",
+    "description": "Resolve race conditions under concurrent writes during high-throughput status updates.",
+    "status": "in_progress",
+    "created_at": "2026-06-14T01:15:00.000Z",
+    "updated_at": "2026-06-14T02:45:00.000Z"
+  },
+  {
+    "id": "9c11adb3-df6a-4cce-9a3b-27bd5a27a0a7",
+    "title": "Design responsive tablet layout",
+    "description": "Optimize layout dimensions and navigation segments for vertical screen profiles.",
+    "status": "pending",
+    "created_at": "2026-06-14T01:30:00.000Z",
+    "updated_at": "2026-06-14T02:00:00.000Z"
+  },
+  {
+    "id": "45c7dae2-bedf-46a4-ac3a-cf32ad81aefe",
+    "title": "Fix session expiration on mobile Safari",
+    "description": "Investigate silent cookie dropping on redirects under iOS 17.4+ standalone applications.",
+    "status": "to_do",
+    "created_at": "2026-06-14T01:45:00.000Z",
+    "updated_at": "2026-06-14T01:45:00.000Z"
+  },
+  {
+    "id": "f25e6302-90ae-4eb2-a2fe-759325417975",
+    "title": "Setup CI/CD pipeline with GitHub Actions",
+    "description": "Establish automated pipeline to run lint checks, unit tests, and perform builds on pull requests.",
+    "status": "to_do",
+    "created_at": "2026-06-14T02:00:00.000Z",
+    "updated_at": "2026-06-14T02:00:00.000Z"
+  }
+]

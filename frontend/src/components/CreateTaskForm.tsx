@@ -3,10 +3,15 @@ import { useCreateTask } from "../hooks/useTasks";
 import { ACTORS } from "../types";
 import type { Actor } from "../types";
 
-export const CreateTaskForm: React.FC = () => {
+interface CreateTaskFormProps {
+  onSuccess?: () => void;
+  defaultActor?: Actor;
+}
+
+export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onSuccess, defaultActor = "john.doe" }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [actor, setActor] = useState<Actor>("john.doe");
+  const [actor, setActor] = useState<Actor>(defaultActor);
   const [error, setError] = useState<string | null>(null);
 
   const createTaskMutation = useCreateTask();
@@ -33,6 +38,10 @@ export const CreateTaskForm: React.FC = () => {
       setTitle("");
       setDescription("");
       setActor("john.doe");
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err: any) {
       setError(err?.error?.message || "An unexpected error occurred.");
     }
@@ -40,8 +49,6 @@ export const CreateTaskForm: React.FC = () => {
 
   return (
     <form className="create-task-form" onSubmit={handleSubmit}>
-      <h2 className="form-title">Create New Task</h2>
-      
       {error && <div className="form-error-banner">{error}</div>}
 
       <div className="form-row">

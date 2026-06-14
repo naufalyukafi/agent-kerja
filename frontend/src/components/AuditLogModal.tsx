@@ -8,6 +8,17 @@ interface AuditLogModalProps {
   onClose: () => void;
 }
 
+const COLUMN_NAMES: Record<TaskStatus, string> = {
+  to_do: "To Do",
+  pending: "Pending",
+  in_progress: "In Progress",
+  done: "Done",
+};
+
+const formatStatus = (status: TaskStatus) => {
+  return COLUMN_NAMES[status] || status;
+};
+
 export const AuditLogModal: React.FC<AuditLogModalProps> = ({
   taskId,
   taskTitle,
@@ -15,23 +26,19 @@ export const AuditLogModal: React.FC<AuditLogModalProps> = ({
 }) => {
   const { data: logs, isLoading, error } = useAuditLogs(taskId);
 
-  const formatStatus = (status: TaskStatus) => {
-    return status.toUpperCase().replace("_", " ");
-  };
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div className="modal-content">
         <div className="modal-header">
           <h2 className="modal-title">Audit Log Trail</h2>
-          <button className="btn-close" onClick={onClose}>
+          <button type="button" className="modal-close" onClick={onClose} aria-label="Close modal">
             &times;
           </button>
         </div>
 
         <div className="modal-body">
-          <div className="task-context">
-            <span className="context-label">Task:</span>
+          <div className="task-context" style={{ marginBottom: "16px", background: "var(--bg)", padding: "12px", borderRadius: "8px" }}>
+            <span className="context-label" style={{ fontWeight: 600, marginRight: "8px" }}>Task:</span>
             <span className="context-value">{taskTitle}</span>
           </div>
 
@@ -57,27 +64,26 @@ export const AuditLogModal: React.FC<AuditLogModalProps> = ({
           {!isLoading && !error && logs && logs.length > 0 && (
             <div className="log-timeline">
               {logs.map((log) => (
-                <div key={log.id} className="log-item">
-                  <div className="log-marker"></div>
+                <div key={log.id} className="log-item" style={{ display: "flex", gap: "12px", marginBottom: "16px", paddingLeft: "8px", borderLeft: "2px solid var(--border)" }}>
                   <div className="log-details">
-                    <div className="log-summary">
-                      <span className="log-actor">{log.actor}</span>{" "}
+                    <div className="log-summary" style={{ fontSize: "14px", color: "var(--text-primary)" }}>
+                      <span className="log-actor" style={{ fontWeight: 600 }}>{log.actor}</span>{" "}
                       {log.from_status === null ? (
-                        <span className="log-action creation">created the task</span>
+                        <span className="log-action creation" style={{ color: "#10b981", fontWeight: 500 }}>created the task</span>
                       ) : (
                         <span>
                           transitioned status from{" "}
-                          <span className={`log-badge status-${log.from_status}`}>
+                          <span className={`badge status-${log.from_status}`} style={{ fontSize: "12px", padding: "2px 6px" }}>
                             {formatStatus(log.from_status)}
                           </span>{" "}
                           to{" "}
-                          <span className={`log-badge status-${log.to_status}`}>
+                          <span className={`badge status-${log.to_status}`} style={{ fontSize: "12px", padding: "2px 6px" }}>
                             {formatStatus(log.to_status)}
                           </span>
                         </span>
                       )}
                     </div>
-                    <div className="log-time">
+                    <div className="log-time" style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
                       {new Date(log.changed_at).toLocaleString()}
                     </div>
                   </div>
@@ -87,8 +93,8 @@ export const AuditLogModal: React.FC<AuditLogModalProps> = ({
           )}
         </div>
 
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
+        <div className="modal-footer" style={{ marginTop: "24px", display: "flex", justifyContent: "flex-end" }}>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>
             Close
           </button>
         </div>
