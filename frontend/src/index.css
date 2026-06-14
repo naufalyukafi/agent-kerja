@@ -386,6 +386,8 @@ body {
     font-weight: 600;
     color: var(--text-primary);
     flex: 1;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .cdots {
@@ -418,6 +420,13 @@ body {
     color: var(--text-secondary);
     margin-bottom: 8px;
     line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .cmeta {
@@ -808,4 +817,94 @@ body {
         flex-direction: column;
         gap: 0;
     }
+}
+
+/* Card Footer and Actor Badge */
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+    gap: 8px;
+}
+
+.card-footer-left {
+    display: flex;
+    align-items: center;
+    min-width: 0; /* Enable text truncation */
+}
+
+.actor-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.actor-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.actor-name {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Card direct transition button */
+.card-transition-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    height: 24px;
+}
+
+.card-transition-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background-color: #f5f3ff;
+    box-shadow: 0 2px 4px rgba(79, 70, 229, 0.05);
+}
+
+.card-transition-btn.complete {
+    color: #047857;
+    background-color: #ecfdf5;
+    border-color: #d1fae5;
+}
+
+.card-transition-btn.complete:hover {
+    color: #ffffff;
+    background-color: #059669;
+    border-color: #059669;
+    box-shadow: 0 2px 4px rgba(5, 150, 105, 0.1);
+}
+
+.card-transition-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import type { Task, TaskStatus, Actor } from "../types";
 import { STATUS_ORDER } from "../types";
-import { useUpdateStatus, useDeleteTask } from "../hooks/useTasks";
+import { useUpdateStatus, useDeleteTask, useAuditLogs } from "../hooks/useTasks";
 
 // Pure helper functions placed outside component scope to avoid rebuilds on every render
 const formatDate = (dateString: string) => {
@@ -30,6 +30,22 @@ const getLogoBg = (title: string) => {
   return colors[code % colors.length];
 };
 
+const getActorInitials = (actorName?: string) => {
+  if (!actorName) return "?";
+  const parts = actorName.split(".");
+  if (parts.length >= 2) {
+    return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+  }
+  return actorName.substring(0, 2).toUpperCase();
+};
+
+const getActorBg = (actorName?: string) => {
+  if (!actorName) return "#f1f5f9";
+  const code = actorName.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const colors = ["#eff6ff", "#fef2f2", "#f0fdf4", "#fffbeb", "#faf5ff", "#f0fdfa"];
+  return colors[code % colors.length];
+};
+
 interface TaskRowProps {
   task: Task;
   activeActor: Actor;
@@ -42,6 +58,10 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, activeActor, onViewLogs 
   
   const updateStatusMutation = useUpdateStatus();
   const deleteTaskMutation = useDeleteTask();
+
+  // Fetch audit logs for this task to identify the latest actor
+  const { data: logs } = useAuditLogs(task.id);
+  const latestActor = logs && logs.length > 0 ? logs[logs.length - 1].actor : undefined;
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -84,18 +104,29 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, activeActor, onViewLogs 
   };
 
   return (
-    <div className={`card status-${task.status}`}>
+    <div 
+      className={`card status-${task.status}`} 
+      onClick={() => onViewLogs(task.id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onViewLogs(task.id);
+        }
+      }}
+    >
       <div className="ctop">
-        <div className="logo" style={{ backgroundColor: getLogoBg(task.title), fontWeight: 600, color: '#374151' }}>
-          <span>{getLogoLetter(task.title)}</span>
-        </div>
         <span className="cname">{task.title}</span>
         
         {/* Changed from span to proper button element to address accessibility warning */}
         <button 
           type="button" 
           className="cdots" 
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMenuOpen(!isMenuOpen);
+          }}
           aria-label="Task menu"
           style={{ background: 'none', border: 'none' }}
         >
@@ -112,7 +143,10 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, activeActor, onViewLogs 
               <button 
                 type="button"
                 className="kanban-dropdown-item"
-                onClick={handleStatusChange}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStatusChange();
+                }}
                 disabled={updateStatusMutation.isPending}
               >
                 Move to {formatStatus(nextStatus)}
@@ -121,17 +155,21 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, activeActor, onViewLogs 
             <button 
               type="button"
               className="kanban-dropdown-item"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 onViewLogs(task.id);
                 setIsMenuOpen(false);
               }}
             >
-              View Logs
+              View Details & Logs
             </button>
             <button 
               type="button"
               className="kanban-dropdown-item danger"
-              onClick={handleDelete}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+              }}
               disabled={deleteTaskMutation.isPending}
             >
               Delete
@@ -144,17 +182,58 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, activeActor, onViewLogs 
         <div className="cdesc">{task.description}</div>
       )}
 
-      <div className="cmeta">
-        Created &middot; {formatDate(task.created_at)}
+      <div className="cmeta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '8px 0 0 0' }}>
+        <span>Created {formatDate(task.created_at)}</span>
+        <span className="ctag">
+          <svg className="ic-grey" viewBox="0 0 24 24" style={{ width: '10px', height: '10px', marginRight: '4px' }}>
+            <rect x="4" y="14" width="4" height="6" rx="1" />
+            <rect x="10" y="10" width="4" height="10" rx="1" />
+            <rect x="16" y="6" width="4" height="14" rx="1" />
+          </svg>
+          {formatStatus(task.status)}
+        </span>
       </div>
 
-      <div className="ctag">
-        <svg className="ic-grey" viewBox="0 0 24 24">
-          <rect x="4" y="14" width="4" height="6" rx="1" />
-          <rect x="10" y="10" width="4" height="10" rx="1" />
-          <rect x="16" y="6" width="4" height="14" rx="1" />
-        </svg>
-        {formatStatus(task.status)}
+      <div className="card-footer">
+        <div className="card-footer-left">
+          <div className="actor-badge" title={`Latest actor: ${latestActor || "None"}`}>
+            <div className="actor-avatar" style={{ backgroundColor: getActorBg(latestActor) }}>
+              {getActorInitials(latestActor)}
+            </div>
+            <span className="actor-name">{latestActor || "Unassigned"}</span>
+          </div>
+        </div>
+
+        <div className="card-footer-right">
+          {nextStatus && (
+            <button
+              type="button"
+              className={`card-transition-btn ${nextStatus === "done" ? "complete" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStatusChange();
+              }}
+              disabled={updateStatusMutation.isPending}
+            >
+              {nextStatus === "done" ? (
+                <>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ width: '10px', height: '10px' }}>
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span>Complete</span>
+                </>
+              ) : (
+                <>
+                  <span>{formatStatus(nextStatus)}</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '10px', height: '10px' }}>
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </>
+              )}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

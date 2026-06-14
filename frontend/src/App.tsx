@@ -104,8 +104,7 @@ function App() {
         {/* Audit Log Modal */}
         {selectedTaskId && selectedTask && (
           <AuditLogModal
-            taskId={selectedTaskId}
-            taskTitle={selectedTask.title}
+            task={selectedTask}
             onClose={() => setSelectedTaskId(null)}
           />
         )}
